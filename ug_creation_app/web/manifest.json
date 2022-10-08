@@ -1,6 +1,6 @@
 {
-    "name": "ug_creation_app",
-    "short_name": "ug_creation_app",
+    "name": "ugbussinesscard",
+    "short_name": "ugbussinesscard",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

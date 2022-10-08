@@ -1,4 +1,4 @@
-package com.example.ug_creation_app
+package com.app.ugbussinesscard
 
 import io.flutter.embedding.android.FlutterActivity
 

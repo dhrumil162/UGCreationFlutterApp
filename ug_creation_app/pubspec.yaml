@@ -1,4 +1,4 @@
-name: ug_creation_app
+name: ugbussinesscard
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -29,7 +29,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  nb_utils: ^4.6.20
+  shared_preferences: ^2.0.15
+  google_fonts: ^3.0.1
+  provider: ^6.0.3
+  flutter_launcher_icons: ^0.10.0
+  hexcolor: ^3.0.1
+  modal_bottom_sheet: ^2.1.0
+  advance_image_picker: ^0.1.7+1
+  intl: ^0.17.0
+  path_provider: ^2.0.11
+  uuid: ^3.0.6
+  permission_handler: ^10.0.0
+  path: ^1.8.1
+  flex_color_picker: ^2.4.0
+  get: ^4.6.5
+  dotted_border: ^2.0.0+2
+  gestures: ^1.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -44,10 +60,15 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_icons:
+  image_path: 'assets/icon/icon.png'
+  android: true
+  ios: true
 
 # The following section is specific to Flutter.
 flutter:
@@ -57,13 +78,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/images/
+    - assets/icon/
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
+  # https://flutter.dev/assets-and-images/#resolution-aware.R
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
