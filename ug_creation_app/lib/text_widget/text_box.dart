@@ -24,9 +24,6 @@ class TextEditingBox extends StatefulWidget {
   /// For Visibility of editing style modal
   bool openModal;
 
-  /// Total Colors option that you want to give to user
-  List<Color>? palletColor;
-
   /// Total Fonts option that you want to give to user
   final List<String> fonts;
 
@@ -43,6 +40,8 @@ class TextEditingBox extends StatefulWidget {
   final void Function(double)? onRotate;
 
   final Function(TextStyle)? onTextStyleEdited;
+
+  final Function(String)? onTextChange;
 
   double? angle = 0.0;
 
@@ -64,7 +63,7 @@ class TextEditingBox extends StatefulWidget {
       this.onMoveStop,
       this.onSizeChange,
       this.onTextStyleEdited,
-      this.palletColor,
+      this.onTextChange,
       this.onRotate,
       this.angle = 0.0})
       : super(key: key);
@@ -75,44 +74,19 @@ class TextEditingBox extends StatefulWidget {
 
 class _TextEditingBoxState extends State<TextEditingBox> {
   double angle = 0.0;
-  double xPosition = 0;
-  double yPosition = 0;
-  List<Color>? _palletColor;
+  double xPosition = 0.0;
+  double yPosition = 0.0;
+  double _oldAngle = 0.0;
+  double _angleDelta = 0.0;
+  Offset deltaOffset = const Offset(0, 0);
+
   @override
   void initState() {
-    if (widget.palletColor != null) {
-      if (widget.palletColor!.isEmpty) {
-        _palletColor = [
-          Colors.black,
-          Colors.white,
-          Colors.red,
-          Colors.blue,
-          Colors.blueAccent,
-          Colors.brown,
-          Colors.green,
-          Colors.indigoAccent,
-          Colors.lime,
-        ];
-      } else {
-        _palletColor = widget.palletColor;
-      }
-    } else {
-      _palletColor = [
-        Colors.black,
-        Colors.white,
-        Colors.red,
-        Colors.blue,
-        Colors.blueAccent,
-        Colors.brown,
-        Colors.green,
-        Colors.indigoAccent,
-        Colors.lime,
-      ];
-    }
     setState(() {
       xPosition = widget.newText.left;
       yPosition = widget.newText.top;
       angle = widget.angle ?? 0.0;
+      _oldAngle = widget.angle ?? 0.0;
     });
     super.initState();
   }
@@ -133,10 +107,17 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                 angle = tap.rotation;
               }
               if (widget.onMoveStop != null && widget.isSelected) {
-                setState(() {
-                  xPosition += tap.focalPointDelta.dx;
-                  yPosition += tap.focalPointDelta.dy;
-                });
+                if (_oldAngle > 1.2) {
+                  setState(() {
+                    xPosition -= tap.focalPointDelta.dx;
+                    yPosition -= tap.focalPointDelta.dy;
+                  });
+                } else {
+                  setState(() {
+                    xPosition += tap.focalPointDelta.dx;
+                    yPosition += tap.focalPointDelta.dy;
+                  });
+                }
                 widget.onMoveStop!(ItemStyle(xPosition, yPosition));
               }
             },
@@ -153,17 +134,17 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                 });
                 if (widget.isSelected == true) {
                   textModelBottomSheet(
-                      context: context,
-                      newText: widget.newText,
-                      palletColor: _palletColor!);
+                    context: context,
+                    newText: widget.newText,
+                  );
                 }
               } else {
                 widget.onTap!();
                 if (widget.isSelected) {
                   textModelBottomSheet(
-                      context: context,
-                      newText: widget.newText,
-                      palletColor: _palletColor!);
+                    context: context,
+                    newText: widget.newText,
+                  );
                 }
               }
             },
@@ -189,7 +170,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                       if (widget.onCancel != null) {
                         widget.onCancel!();
                       }
-
                       setState(() {
                         if (widget.isSelected) {
                           widget.isSelected = false;
@@ -240,12 +220,35 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                   bottom: 0,
                   left: 0,
                   child: GestureDetector(
-                    onScaleUpdate: (detail) {
-                      setState(() => angle = detail.focalPoint.direction);
+                    behavior: HitTestBehavior.translucent,
+                    onPanStart: (details) {
+                      // final touchPositionFromCenter =
+                      //     details.localPosition - centerOfGestureDetector;
+                      _angleDelta = _oldAngle - details.localPosition.direction;
+                    },
+                    onPanEnd: (details) {
+                      setState(
+                        () {
+                          _oldAngle = angle;
+                        },
+                      );
                       if (widget.onRotate != null && widget.isSelected) {
-                        widget.onRotate!(angle);
+                        widget.onRotate!(_oldAngle);
                       }
                     },
+                    onPanUpdate: (details) {
+                      setState(
+                        () {
+                          angle = details.localPosition.direction + _angleDelta;
+                        },
+                      );
+                    },
+                    // onScaleUpdate: (detail) {
+                    //   setState(() => angle = detail.focalPoint.direction);
+                    //   if (widget.onRotate != null && widget.isSelected) {
+                    //     widget.onRotate!(angle);
+                    //   }
+                    // },
                     child: widget.isSelected
                         ? Container(
                             padding: const EdgeInsets.all(2),
@@ -302,9 +305,7 @@ class _TextEditingBoxState extends State<TextEditingBox> {
 
   // Model Bottom sheet
   Future textModelBottomSheet(
-      {required BuildContext context,
-      required TextModel newText,
-      required List<Color> palletColor}) {
+      {required BuildContext context, required TextModel newText}) {
     double height = MediaQuery.of(context).size.height;
     return showModalBottomSheet(
         elevation: 15,
@@ -316,7 +317,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
             height: height * .35,
             child: TextStyleEditor(
               fonts: widget.fonts,
-              paletteColors: palletColor,
               textStyle: newText.textStyle!,
               onTextStyleEdited: (style) {
                 setState(
@@ -351,6 +351,9 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                 onPressed: () {
                   setState(
                       () => widget.newText.name = dailogTextController.text);
+                  if (widget.onTextChange != null) {
+                    widget.onTextChange!(dailogTextController.text);
+                  }
                   Navigator.pop(context);
                 },
               )

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hexcolor/hexcolor.dart';
-import 'package:ugbussinesscard/utils/constants.dart';
+import 'package:ugbussinesscard/utils/helper.dart';
 
 class CustomTextField extends StatelessWidget {
   final String? hint;
@@ -36,7 +35,7 @@ class CustomTextField extends StatelessWidget {
         style: textStyle,
         keyboardType: keyboardType,
         textAlign: TextAlign.left,
-        cursorColor: HexColor(appGreyColor),
+        cursorColor: getFontColor(),
         validator: validator,
         maxLines: maxLines,
         minLines: minLines,

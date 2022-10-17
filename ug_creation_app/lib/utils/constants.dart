@@ -14,8 +14,6 @@ Map<int, Color> color = const {
   800: Color.fromRGBO(196, 121, 45, .9),
   900: Color.fromRGBO(196, 121, 45, 1),
 };
-String appColor = "#c4792d";
-String appGreyColor = "#bbbbbb";
 MaterialColor appMatColor = MaterialColor(0xFFc4792d, color);
 
 final List<String> fonts = [
@@ -40,16 +38,4 @@ final List<String> fonts = [
   'Grand Hotel',
   'Oswald',
   'Quicksand'
-];
-
-const List<Color> colorPallet = [
-  Colors.black,
-  Colors.white,
-  Colors.red,
-  Colors.blue,
-  Colors.blueAccent,
-  Colors.brown,
-  Colors.green,
-  Colors.indigoAccent,
-  Colors.lime,
 ];

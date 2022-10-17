@@ -1,18 +1,16 @@
 class User {
-  late String firstname;
-  late String lastname;
+  late String name;
   late String email;
   late String phone;
   late String address;
   late String companyLogo;
 
-  User(this.firstname, this.lastname, this.email, this.phone, this.address,
+  User(this.name, this.email, this.phone, this.address,
       {this.companyLogo = ""});
 
   //constructor that convert json to object instance
   User.fromJson(Map<String, dynamic> json)
-      : firstname = json['firstname'],
-        lastname = json['lastname'],
+      : name = json['name'],
         address = json['address'],
         email = json['email'],
         companyLogo = json['companyLogo'],
@@ -20,8 +18,7 @@ class User {
 
   //a method that convert object to json
   Map<String, dynamic> toJson() => {
-        'firstname': firstname,
-        'lastname': lastname,
+        'name': name,
         'email': email,
         'phone': phone,
         'address': address,

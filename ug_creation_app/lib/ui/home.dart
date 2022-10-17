@@ -3,7 +3,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hexcolor/hexcolor.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:path/path.dart';
@@ -11,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:ugbussinesscard/main.dart';
 import 'package:ugbussinesscard/models/businesscards.dart';
 import 'package:ugbussinesscard/models/user.dart';
-import 'package:ugbussinesscard/ui/businesscard.dart';
+import 'package:ugbussinesscard/ui/card2.dart';
 import 'package:ugbussinesscard/utils/constants.dart';
 import 'package:ugbussinesscard/utils/filestorage.dart';
 import 'package:ugbussinesscard/utils/helper.dart';
@@ -37,8 +36,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController emailController = TextEditingController();
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   TextEditingController mobileNumberController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   User? user;
@@ -52,7 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   initDirectory() async {
-    //removeKey("Card1");
+    // removeKey("Card2");
+    // removeKey("companydetail");
     imageCache.clear();
     imageCache.clearLiveImages();
     setState(() {
@@ -61,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     FileStorage fs = FileStorage();
     if (await fs.requestPermissions(Permission.storage)) {
       var directory = await fs.getDownloadDirectory();
-      var cardDirectory = Directory("${directory?.path ?? ""}/Cards");
+      var cardDirectory = Directory("$directory/Cards");
       if (!cardDirectory.existsSync()) {
         cardDirectory.createSync(recursive: true);
       }
@@ -89,8 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     if (user != null) {
       emailController.text = user?.email ?? "";
-      firstNameController.text = user?.firstname ?? "";
-      lastNameController.text = user?.lastname ?? "";
+      nameController.text = user?.name ?? "";
       mobileNumberController.text = user?.phone ?? "";
       addressController.text = user?.address ?? "";
     }
@@ -129,15 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    formCustomTextField(firstNameController, TextInputType.name,
+                    formCustomTextField(nameController, TextInputType.name,
                         icon: Icons.person_outline_rounded,
-                        hintText: "Enter your First Name",
-                        labelText: "First Name"),
-                    20.height,
-                    formCustomTextField(lastNameController, TextInputType.name,
-                        icon: Icons.person_outline_rounded,
-                        hintText: "Enter your Last Name",
-                        labelText: "Last Name"),
+                        hintText: "Enter your Name",
+                        labelText: "Name"),
                     20.height,
                     formCustomTextField(
                         emailController, TextInputType.emailAddress,
@@ -206,8 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                               setState(() {
                                 user?.email = emailController.text;
-                                user?.firstname = firstNameController.text;
-                                user?.lastname = lastNameController.text;
+                                user?.name = nameController.text;
                                 user?.phone = mobileNumberController.text;
                                 user?.address = addressController.text;
                               });
@@ -216,13 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 FileStorage fs = FileStorage();
                                 if (await fs
                                     .requestPermissions(Permission.storage)) {
-                                  var directory =
+                                  var directoryPath =
                                       await fs.getDownloadDirectory();
-                                  if (!(directory?.existsSync() ?? false)) {
-                                    directory?.createSync();
+                                  var directory = Directory(directoryPath);
+                                  if (!(directory.existsSync())) {
+                                    directory.createSync();
                                   }
                                   var newPath =
-                                      '${directory?.path ?? ""}/${const Uuid().v1().toString().substring(0, 7)}.png';
+                                      '${directory.path}/companylogo/${const Uuid().v1().toString().substring(0, 7)}.png';
                                   var capImage = File(imgObjs[0].modifiedPath);
                                   capImage.readAsBytes().then(
                                     (bytes) {
@@ -238,9 +231,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                               "companydetail", user?.toJson());
                                           Loader().visible(false);
                                           finish(context);
-                                          BusinessCard(
-                                            user: user,
-                                          ).launch(context).then((value) {
+                                          const Card2()
+                                              .launch(context)
+                                              .then((value) {
                                             initDirectory();
                                           });
                                         });
@@ -251,9 +244,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               } else {
                                 setValue("companydetail", user?.toJson());
                                 finish(context);
-                                BusinessCard(
-                                  user: user,
-                                ).launch(context).then((value) {
+                                const Card2()
+                                    .launch(context)
+                                    .then((value) {
                                   initDirectory();
                                 });
                               }
@@ -262,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             textStyle: TextStyle(
                                 fontSize: const Size.fromHeight(20).height,
                                 color: white),
-                            color: HexColor(appColor),
+                            color: appMatColor,
                           )
                         : const CircularProgressIndicator()
                   ],
@@ -299,75 +292,62 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: appMatColor,
                   ).paddingSymmetric(
                       horizontal: const Size.fromWidth(25).width),
-                  folders.isNotEmpty
-                      ? Column(
-                          children: folders.map((folder) {
-                            return Container(
-                                padding: EdgeInsets.only(
-                                  bottom: const Size.fromHeight(2).height,
-                                ),
-                                width: context.width(),
-                                child: InkWell(
-                                    onTap: () {
-                                      // cardDetail(context);
-                                      setState(() {
-                                        user = getUserDetail();
-                                      });
-                                      finish(context);
-                                      BusinessCard(
-                                        user: user,
-                                      ).launch(context).then((value) {
-                                        initDirectory();
-                                      });
-                                    },
-                                    child: Card(
-                                        elevation: 5,
-                                        child: Wrap(
-                                          direction: Axis.vertical,
-                                          children: [
-                                            folder.cards.isNotEmpty
-                                                ? Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children:
-                                                        folder.cards.map((e) {
-                                                      return Image.file(
-                                                        File(e.filePath),
-                                                        width: context.width() /
-                                                            2.035,
-                                                        fit: BoxFit.contain,
-                                                      );
-                                                    }).toList())
-                                                : 0.height,
-                                            Text(
-                                              folder.cardName,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      const Size.fromHeight(16)
-                                                          .height),
-                                            )
-                                                .paddingOnly(
-                                                  top: const Size.fromHeight(10)
-                                                      .height,
-                                                  bottom:
-                                                      const Size.fromHeight(10)
-                                                          .height,
-                                                  left: const Size.fromWidth(15)
-                                                      .width,
-                                                  right:
-                                                      const Size.fromWidth(15)
-                                                          .width,
-                                                )
-                                                .center(),
-                                          ],
-                                        ))));
-                          }).toList(),
-                        ).paddingSymmetric(
-                          vertical: const Size.fromHeight(15).height,
-                        )
-                      : 0.height
+                  RefreshIndicator(
+                      onRefresh: () async {
+                        initDirectory();
+                      },
+                      child: folders.isNotEmpty
+                          ? Column(
+                              children: folders.map((folder) {
+                                return Container(
+                                    padding: EdgeInsets.only(
+                                      bottom: const Size.fromHeight(2).height,
+                                    ),
+                                    width: context.width(),
+                                    child: InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            user = getUserDetail();
+                                          });
+                                          finish(context);
+                                          const Card2()
+                                              .launch(context)
+                                              .then((value) {
+                                            initDirectory();
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: themeChangeProvider.darkTheme
+                                                ? cardDarkColor
+                                                : cardLightColor,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.grey
+                                                    .withOpacity(0.5),
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: folder.cards.isNotEmpty
+                                              ? Wrap(
+                                                  direction: Axis.horizontal,
+                                                  alignment: WrapAlignment.end,
+                                                  spacing: 0,
+                                                  children:
+                                                      folder.cards.map((e) {
+                                                    return Image.file(
+                                                      File(e.filePath),
+                                                      width:
+                                                          context.width() / 2,
+                                                      fit: BoxFit.contain,
+                                                    );
+                                                  }).toList())
+                                              : 0.height,
+                                        )));
+                              }).toList(),
+                            ).paddingTop(const Size.fromHeight(10).height)
+                          : 0.height)
                 ],
               )),
         ));

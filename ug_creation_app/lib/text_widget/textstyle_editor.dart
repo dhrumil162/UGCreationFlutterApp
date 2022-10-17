@@ -1,11 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-
-import 'text_src/color_palette.dart';
 import 'text_src/toolbar.dart';
 import 'text_src/toolbar_action.dart';
-import 'tools/background_color_tool.dart';
 import 'tools/font_family_tool.dart';
 import 'tools/font_size_tool.dart';
 import 'tools/text_format_tool.dart';
@@ -25,9 +23,6 @@ class TextStyleEditor extends StatefulWidget {
   /// The inithial editor tool
   final EditorToolbarAction initialTool;
 
-  /// Editor's palette colors
-  final List<Color>? paletteColors;
-
   /// [onTextStyleEdited] will be called after [textStyle] prop has changed
   final Function(TextStyle)? onTextStyleEdited;
 
@@ -45,7 +40,6 @@ class TextStyleEditor extends StatefulWidget {
     Key? key,
     required this.fonts,
     required this.textStyle,
-    this.paletteColors,
     this.initialTool = EditorToolbarAction.fontFamilyTool,
     this.onTextStyleEdited,
     this.onToolbarActionChanged,
@@ -58,27 +52,11 @@ class TextStyleEditor extends StatefulWidget {
 class _TextStyleEditorState extends State<TextStyleEditor> {
   late EditorToolbarAction _currentTool;
   late TextStyle _textStyle;
-  late List<Color> _paletteColors;
 
   @override
   void initState() {
     _currentTool = widget.initialTool;
     _textStyle = widget.textStyle;
-
-    // Set default palette's colors
-    _paletteColors = widget.paletteColors ??
-        [
-          Colors.black,
-          Colors.white,
-          Colors.red,
-          Colors.blue,
-          Colors.blueAccent,
-          Colors.brown,
-          Colors.green,
-          Colors.indigoAccent,
-          Colors.lime,
-        ];
-
     super.initState();
   }
 
@@ -153,31 +131,48 @@ class _TextStyleEditorState extends State<TextStyleEditor> {
                     },
                   );
                 case EditorToolbarAction.fontColorTool:
-                  return BackgroundColorTool(
-                    activeColor: _textStyle.color,
-                    colors: _paletteColors,
-                    onColorPicked: (color) {
+                  return ColorPicker(
+                    color: _textStyle.color ?? const Color(0xFF000000),
+                    onColorChanged: (Color color) {
                       setState(
                           () => _textStyle = _textStyle.copyWith(color: color));
-
                       if (widget.onTextStyleEdited != null) {
                         widget.onTextStyleEdited!(_textStyle);
                       }
                     },
-                  );
-                case EditorToolbarAction.backgroundColorTool:
-                  return ColorPalette(
-                    activeColor: _textStyle.backgroundColor,
-                    colors: _paletteColors,
-                    onColorPicked: (color) {
-                      setState(() => _textStyle =
-                          _textStyle.copyWith(backgroundColor: color));
-                      if (widget.onTextStyleEdited != null) {
-                        widget.onTextStyleEdited!(_textStyle);
-                      }
+                    width: 40,
+                    height: 40,
+                    borderRadius: 4,
+                    spacing: 5,
+                    runSpacing: 5,
+                    wheelDiameter: 155,
+                    heading: Text(
+                      'Select color',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    subheading: Text(
+                      'Select color shade',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    wheelSubheading: Text(
+                      'Selected color and its shades',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    showColorName: false,
+                    materialNameTextStyle: Theme.of(context).textTheme.caption,
+                    colorNameTextStyle: Theme.of(context).textTheme.caption,
+                    colorCodeTextStyle: Theme.of(context).textTheme.bodyText2,
+                    colorCodePrefixStyle: Theme.of(context).textTheme.caption,
+                    selectedPickerTypeColor:
+                        Theme.of(context).colorScheme.primary,
+                    pickersEnabled: const <ColorPickerType, bool>{
+                      ColorPickerType.both: true,
+                      ColorPickerType.primary: false,
+                      ColorPickerType.accent: false,
+                      ColorPickerType.wheel: true,
+                      ColorPickerType.custom: false,
                     },
                   );
-
                 default:
                   return Container();
               }

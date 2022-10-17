@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:ugbussinesscard/models/item_style.dart';
+import 'package:ugbussinesscard/models/user.dart';
 
 class CardDetail {
   int? backcardcolor;
@@ -14,6 +15,7 @@ class CardDetail {
   ItemStyle? backAddressStyle;
   ItemStyle? backEmailStyle;
   ItemStyle? backMobileStyle;
+  User? user;
 
   CardDetail(this.backcardcolor, this.frontcardcolor);
 
@@ -37,6 +39,7 @@ class CardDetail {
       backAddressStyle = ItemStyle.fromJson(json['backAddressStyle']);
       backEmailStyle = ItemStyle.fromJson(json['backEmailStyle']);
       backMobileStyle = ItemStyle.fromJson(json['backMobileStyle']);
+      user = User.fromJson(json['user']);
     }
   }
 
@@ -58,6 +61,7 @@ class CardDetail {
         'backTitleStyle': backTitleStyle?.toJson(),
         'backAddressStyle': backAddressStyle?.toJson(),
         'backEmailStyle': backEmailStyle?.toJson(),
+        'user': user?.toJson(),
         'backMobileStyle': backMobileStyle?.toJson()
       };
 }

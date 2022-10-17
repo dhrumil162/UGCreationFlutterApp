@@ -12,7 +12,6 @@ import 'package:ugbussinesscard/main.dart';
 import 'package:ugbussinesscard/models/carddetail.dart';
 import 'package:ugbussinesscard/models/item_style.dart';
 import 'package:ugbussinesscard/models/text_model.dart';
-import 'package:ugbussinesscard/models/user.dart';
 import 'package:ugbussinesscard/resizable_utils/movable_item.dart';
 import 'package:ugbussinesscard/resizable_utils/responsive_util.dart';
 import 'package:ugbussinesscard/text_widget/text_box.dart';
@@ -22,15 +21,14 @@ import 'package:ugbussinesscard/utils/helper.dart';
 import 'package:ugbussinesscard/utils/imgutils.dart';
 import 'package:ugbussinesscard/utils/widget_to_image.dart';
 
-class BusinessCard extends StatefulWidget {
-  final User? user;
-  const BusinessCard({Key? key, this.user}) : super(key: key);
+class Card2 extends StatefulWidget {
+  const Card2({Key? key}) : super(key: key);
 
   @override
-  _BusinessCardState createState() => _BusinessCardState();
+  _Card2State createState() => _Card2State();
 }
 
-class _BusinessCardState extends State<BusinessCard> {
+class _Card2State extends State<Card2> {
   GlobalKey? key1;
   GlobalKey? key2;
   Uint8List? bytes1;
@@ -43,7 +41,8 @@ class _BusinessCardState extends State<BusinessCard> {
   void initState() {
     super.initState();
     setState(() {
-      cardDetail = getCardDetail("Card1");
+      cardDetail = getCardDetail("Card2");
+      cardDetail?.user ??= getUserDetail();
       if (cardDetail != null) {
         cardDetail?.frontcardcolor = cardDetail?.frontcardcolor ??
             (themeChangeProvider.darkTheme
@@ -60,20 +59,57 @@ class _BusinessCardState extends State<BusinessCard> {
             Size(const Size.fromWidth(100).width,
                 const Size.fromHeight(150).height);
         cardDetail?.frontImagePosition = cardDetail?.frontImagePosition ??
-            ItemStyle(const Size.fromWidth(100).width,
-                const Size.fromHeight(20).height);
+            ItemStyle(const Size.fromWidth(90).width,
+                const Size.fromHeight(50).height);
         cardDetail?.frontTitleStyle = cardDetail?.frontTitleStyle ??
-            ItemStyle(const Size.fromWidth(85).width,
+            ItemStyle(const Size.fromWidth(100).width,
                 const Size.fromHeight(150).height);
         cardDetail?.backImagePosition = cardDetail?.backImagePosition ??
-            ItemStyle(const Size.fromWidth(0).width,
-                const Size.fromHeight(50).height);
+            ItemStyle(const Size.fromWidth(20).width,
+                const Size.fromHeight(45).height);
         cardDetail?.backTitleStyle = cardDetail?.backTitleStyle ??
-            ItemStyle(const Size.fromWidth(140).width,
+            ItemStyle(const Size.fromWidth(130).width,
                 const Size.fromHeight(5).height);
         cardDetail?.backAddressStyle = cardDetail?.backAddressStyle ??
-            ItemStyle(const Size.fromWidth(140).width,
-                const Size.fromHeight(45).height);
+            ItemStyle(const Size.fromWidth(130).width,
+                const Size.fromHeight(45).height,
+                textStyle:
+                    TextStyle(fontSize: const Size.fromHeight(12).height));
+        cardDetail?.backEmailStyle = cardDetail?.backEmailStyle ??
+            ItemStyle(const Size.fromWidth(130).width,
+                const Size.fromHeight(180).height,
+                textStyle:
+                    TextStyle(fontSize: const Size.fromHeight(12).height));
+        cardDetail?.backMobileStyle = cardDetail?.backMobileStyle ??
+            ItemStyle(const Size.fromWidth(130).width,
+                const Size.fromHeight(160).height,
+                textStyle:
+                    TextStyle(fontSize: const Size.fromHeight(12).height));
+      }
+      if (cardDetail?.frontTitleStyle?.textStyle?.color == null) {
+        cardDetail?.frontTitleStyle?.textStyle = cardDetail
+            ?.frontTitleStyle?.textStyle
+            ?.copyWith(color: getFontColor());
+      }
+      if (cardDetail?.backAddressStyle?.textStyle?.color == null) {
+        cardDetail?.backAddressStyle?.textStyle = cardDetail
+            ?.backAddressStyle?.textStyle
+            ?.copyWith(color: getFontColor());
+      }
+      if (cardDetail?.backTitleStyle?.textStyle?.color == null) {
+        cardDetail?.backTitleStyle?.textStyle = cardDetail
+            ?.backTitleStyle?.textStyle
+            ?.copyWith(color: getFontColor());
+      }
+      if (cardDetail?.backEmailStyle?.textStyle?.color == null) {
+        cardDetail?.backEmailStyle?.textStyle = cardDetail
+            ?.backEmailStyle?.textStyle
+            ?.copyWith(color: getFontColor());
+      }
+      if (cardDetail?.backMobileStyle?.textStyle?.color == null) {
+        cardDetail?.backMobileStyle?.textStyle = cardDetail
+            ?.backMobileStyle?.textStyle
+            ?.copyWith(color: getFontColor());
       }
     });
   }
@@ -183,7 +219,7 @@ class _BusinessCardState extends State<BusinessCard> {
             if (value == 1) {
               if (isEdit) {
                 snackBar(context, title: 'Card details saved');
-                setValue("Card1", cardDetail?.toJson());
+                setValue("Card2", cardDetail?.toJson());
               }
               setState(() {
                 isEdit = !isEdit;
@@ -257,8 +293,7 @@ class _BusinessCardState extends State<BusinessCard> {
               FileStorage fs = FileStorage();
               if (await fs.requestPermissions(Permission.storage)) {
                 var directory = await fs.getDownloadDirectory();
-                var cardDirectory =
-                    Directory("${directory?.path ?? ""}/Cards/Card1");
+                var cardDirectory = Directory("$directory/Cards/Card2");
                 if (!cardDirectory.existsSync()) {
                   cardDirectory.createSync(recursive: true);
                 }
@@ -283,9 +318,9 @@ class _BusinessCardState extends State<BusinessCard> {
                 }
                 final bytes2 = await Utils.capture(key2);
                 newFile1.writeAsBytesSync(bytes2);
+                setValue("Card2", cardDetail?.toJson());
                 snackBar(context,
                     title: 'Card is downloaded to ${cardDirectory.path}');
-                setValue("Card1", cardDetail?.toJson());
               }
             }
           }),
@@ -309,9 +344,17 @@ class _BusinessCardState extends State<BusinessCard> {
                             elevation: 10,
                             child: SizedBox(
                               height: const Size.fromHeight(240).height,
-                              width: context.width() - 30,
                               child: Stack(children: [
-                                widget.user?.companyLogo.isEmptyOrNull == true
+                                Positioned(
+                                  bottom:0,
+                                  child: CustomPaint(
+                                    size: Size(context.width(),
+                                        const Size.fromHeight(120).height),
+                                    painter: CurvedPainter(),
+                                  ),
+                                ),
+                                cardDetail?.user?.companyLogo.isEmptyOrNull ==
+                                        true
                                     ? 0.height
                                     : MoveableItem(
                                         isMovable: isEdit,
@@ -332,7 +375,8 @@ class _BusinessCardState extends State<BusinessCard> {
                                           disabled: !isEdit,
                                           builder: (context, constraints) {
                                             return Image.file(
-                                              File(widget.user?.companyLogo ??
+                                              File(cardDetail
+                                                      ?.user?.companyLogo ??
                                                   ""),
                                               height: cardDetail
                                                   ?.frontImageSize?.height,
@@ -346,7 +390,6 @@ class _BusinessCardState extends State<BusinessCard> {
                                   fonts: fonts,
                                   boundHeight: context.height(),
                                   boundWidth: context.width(),
-                                  palletColor: colorPallet,
                                   isSelected: isEdit,
                                   angle: cardDetail?.frontTitleStyle?.angle,
                                   onMoveStop: (p0) {
@@ -366,6 +409,11 @@ class _BusinessCardState extends State<BusinessCard> {
                                       cardDetail?.frontTitleStyle?.angle = p0;
                                     });
                                   },
+                                  onTextChange: (p0) {
+                                    setState(() {
+                                      cardDetail?.user?.name = p0;
+                                    });
+                                  },
                                   onTextStyleEdited: (p0) {
                                     setState(() {
                                       cardDetail?.frontTitleStyle?.textStyle =
@@ -374,8 +422,7 @@ class _BusinessCardState extends State<BusinessCard> {
                                   },
                                   onTap: () {},
                                   newText: TextModel(
-                                      name:
-                                          "${widget.user?.firstname} ${widget.user?.lastname}",
+                                      name: "${cardDetail?.user?.name}",
                                       textStyle: cardDetail
                                           ?.frontTitleStyle?.textStyle,
                                       top:
@@ -402,10 +449,19 @@ class _BusinessCardState extends State<BusinessCard> {
                                   : cardLightColor.value)),
                           child: SizedBox(
                               height: const Size.fromHeight(240).height,
-                              width: context.width() - 30,
+                              width: context.width(),
                               child: Stack(
                                 children: [
-                                  widget.user?.companyLogo.isEmptyOrNull == true
+                                  Positioned(
+                                    bottom:0,
+                                    child: CustomPaint(
+                                      size: Size(context.width(),
+                                          const Size.fromHeight(150).height),
+                                      painter: CurvedPainter(),
+                                    ),
+                                  ),
+                                  cardDetail?.user?.companyLogo.isEmptyOrNull ==
+                                          true
                                       ? 0.height
                                       : MoveableItem(
                                           isMovable: isEdit,
@@ -415,7 +471,7 @@ class _BusinessCardState extends State<BusinessCard> {
                                               })),
                                           xPosition: cardDetail
                                                   ?.backImagePosition?.left ??
-                                              0,
+                                              20,
                                           yPosition: cardDetail
                                                   ?.backImagePosition?.top ??
                                               50,
@@ -429,8 +485,8 @@ class _BusinessCardState extends State<BusinessCard> {
                                               },
                                               builder: (context, constraints) {
                                                 return Image.file(
-                                                  File(widget
-                                                          .user?.companyLogo ??
+                                                  File(cardDetail
+                                                          ?.user?.companyLogo ??
                                                       ""),
                                                   width: cardDetail
                                                       ?.backImageSize?.width,
@@ -439,66 +495,246 @@ class _BusinessCardState extends State<BusinessCard> {
                                                   fit: BoxFit.fill,
                                                 );
                                               })),
-                                  MoveableItem(
-                                      isMovable: isEdit,
-                                      onMoveStop: ((p0) => setState(() {
-                                            cardDetail?.backTitleStyle = p0;
-                                          })),
-                                      xPosition:
-                                          cardDetail?.backTitleStyle?.left ??
-                                              140,
-                                      yPosition:
-                                          cardDetail?.backTitleStyle?.top ?? 5,
-                                      child: Text(
-                                          "${widget.user?.firstname} ${widget.user?.lastname}",
-                                          style: cardDetail
-                                              ?.backTitleStyle?.textStyle)),
-                                  MoveableItem(
-                                      isMovable: isEdit,
-                                      onMoveStop: ((p0) => setState(() {
-                                            cardDetail?.backAddressStyle = p0;
-                                          })),
-                                      xPosition:
-                                          cardDetail?.backAddressStyle?.left ??
-                                              140,
-                                      yPosition:
-                                          cardDetail?.backAddressStyle?.top ??
-                                              45,
-                                      child: Text("${widget.user?.address}",
-                                          style: cardDetail
-                                              ?.backAddressStyle?.textStyle)),
-                                  MoveableItem(
-                                      isMovable: isEdit,
-                                      onMoveStop: ((p0) => setState(() {
-                                            cardDetail?.backMobileStyle = p0;
-                                          })),
-                                      xPosition:
-                                          cardDetail?.backMobileStyle?.left ??
-                                              140,
-                                      yPosition:
-                                          cardDetail?.backMobileStyle?.top ??
-                                              160,
-                                      child: Text("${widget.user?.phone}",
-                                          style: cardDetail
-                                              ?.backMobileStyle?.textStyle)),
-                                  MoveableItem(
-                                      isMovable: isEdit,
-                                      onMoveStop: ((p0) => setState(() {
-                                            cardDetail?.backEmailStyle = p0;
-                                          })),
-                                      xPosition:
-                                          cardDetail?.backEmailStyle?.left ??
-                                              140,
-                                      yPosition:
-                                          cardDetail?.backEmailStyle?.top ??
-                                              180,
-                                      child: Text("${widget.user?.email}",
-                                          style: cardDetail
-                                              ?.backEmailStyle?.textStyle)),
+                                  TextEditingBox(
+                                    fonts: fonts,
+                                    boundHeight: context.height(),
+                                    boundWidth: context.width(),
+                                    isSelected: isEdit,
+                                    angle: cardDetail?.backTitleStyle?.angle,
+                                    onMoveStop: (p0) {
+                                      setState(() {
+                                        cardDetail?.backTitleStyle?.left =
+                                            p0.left;
+                                        cardDetail?.backTitleStyle?.top =
+                                            p0.top;
+                                      });
+                                    },
+                                    onSizeChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.backTitleStyle?.scale = p0;
+                                      });
+                                    },
+                                    onRotate: (p0) {
+                                      setState(() {
+                                        cardDetail?.backTitleStyle?.angle = p0;
+                                      });
+                                    },
+                                    onTextStyleEdited: (p0) {
+                                      setState(() {
+                                        cardDetail?.backTitleStyle?.textStyle =
+                                            p0;
+                                      });
+                                    },
+                                    onTextChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.user?.name = p0;
+                                      });
+                                    },
+                                    onTap: () {},
+                                    newText: TextModel(
+                                        name: "${cardDetail?.user?.name}",
+                                        textStyle: cardDetail
+                                            ?.backTitleStyle?.textStyle,
+                                        top: cardDetail?.backTitleStyle?.top ??
+                                            5,
+                                        isSelected: true,
+                                        scale:
+                                            cardDetail?.backTitleStyle?.scale ??
+                                                1,
+                                        left:
+                                            cardDetail?.backTitleStyle?.left ??
+                                                130),
+                                  ),
+                                  TextEditingBox(
+                                    fonts: fonts,
+                                    boundHeight: context.height(),
+                                    boundWidth: context.width(),
+                                    isSelected: isEdit,
+                                    angle: cardDetail?.backAddressStyle?.angle,
+                                    onMoveStop: (p0) {
+                                      setState(() {
+                                        cardDetail?.backAddressStyle?.left =
+                                            p0.left;
+                                        cardDetail?.backAddressStyle?.top =
+                                            p0.top;
+                                      });
+                                    },
+                                    onSizeChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.backAddressStyle?.scale =
+                                            p0;
+                                      });
+                                    },
+                                    onRotate: (p0) {
+                                      setState(() {
+                                        cardDetail?.backAddressStyle?.angle =
+                                            p0;
+                                      });
+                                    },
+                                    onTextStyleEdited: (p0) {
+                                      setState(() {
+                                        cardDetail
+                                            ?.backAddressStyle?.textStyle = p0;
+                                      });
+                                    },
+                                    onTextChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.user?.address = p0;
+                                      });
+                                    },
+                                    onTap: () {},
+                                    newText: TextModel(
+                                        name: "${cardDetail?.user?.address}",
+                                        textStyle: cardDetail
+                                            ?.backAddressStyle?.textStyle,
+                                        top:
+                                            cardDetail?.backAddressStyle?.top ??
+                                                45,
+                                        isSelected: true,
+                                        scale: cardDetail
+                                                ?.backAddressStyle?.scale ??
+                                            1,
+                                        left: cardDetail
+                                                ?.backAddressStyle?.left ??
+                                            130),
+                                  ),
+                                  TextEditingBox(
+                                    fonts: fonts,
+                                    boundHeight: context.height(),
+                                    boundWidth: context.width(),
+                                    isSelected: isEdit,
+                                    angle: cardDetail?.backMobileStyle?.angle,
+                                    onMoveStop: (p0) {
+                                      setState(() {
+                                        cardDetail?.backMobileStyle?.left =
+                                            p0.left;
+                                        cardDetail?.backMobileStyle?.top =
+                                            p0.top;
+                                      });
+                                    },
+                                    onSizeChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.backMobileStyle?.scale = p0;
+                                      });
+                                    },
+                                    onRotate: (p0) {
+                                      setState(() {
+                                        cardDetail?.backMobileStyle?.angle = p0;
+                                      });
+                                    },
+                                    onTextStyleEdited: (p0) {
+                                      setState(() {
+                                        cardDetail?.backMobileStyle?.textStyle =
+                                            p0;
+                                      });
+                                    },
+                                    onTextChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.user?.phone = p0;
+                                      });
+                                    },
+                                    onTap: () {},
+                                    newText: TextModel(
+                                        name: "${cardDetail?.user?.phone}",
+                                        textStyle: cardDetail
+                                            ?.backMobileStyle?.textStyle,
+                                        top: cardDetail?.backMobileStyle?.top ??
+                                            160,
+                                        isSelected: true,
+                                        scale: cardDetail
+                                                ?.backMobileStyle?.scale ??
+                                            1,
+                                        left:
+                                            cardDetail?.backMobileStyle?.left ??
+                                                130),
+                                  ),
+                                  TextEditingBox(
+                                    fonts: fonts,
+                                    boundHeight: context.height(),
+                                    boundWidth: context.width(),
+                                    isSelected: isEdit,
+                                    angle: cardDetail?.backEmailStyle?.angle,
+                                    onMoveStop: (p0) {
+                                      setState(() {
+                                        cardDetail?.backEmailStyle?.left =
+                                            p0.left;
+                                        cardDetail?.backEmailStyle?.top =
+                                            p0.top;
+                                      });
+                                    },
+                                    onSizeChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.backEmailStyle?.scale = p0;
+                                      });
+                                    },
+                                    onRotate: (p0) {
+                                      setState(() {
+                                        cardDetail?.backEmailStyle?.angle = p0;
+                                      });
+                                    },
+                                    onTextStyleEdited: (p0) {
+                                      setState(() {
+                                        cardDetail?.backEmailStyle?.textStyle =
+                                            p0;
+                                      });
+                                    },
+                                    onTextChange: (p0) {
+                                      setState(() {
+                                        cardDetail?.user?.email = p0;
+                                      });
+                                    },
+                                    onTap: () {},
+                                    newText: TextModel(
+                                        name: "${cardDetail?.user?.email}",
+                                        textStyle: cardDetail
+                                            ?.backEmailStyle?.textStyle,
+                                        top: cardDetail?.backEmailStyle?.top ??
+                                            180,
+                                        isSelected: true,
+                                        scale:
+                                            cardDetail?.backEmailStyle?.scale ??
+                                                1,
+                                        left:
+                                            cardDetail?.backEmailStyle?.left ??
+                                                130),
+                                  ),
                                 ],
                               )));
                     }),
                   ],
                 ))));
+  }
+}
+
+class CurvedPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Path path_0 = Path();
+    path_0.moveTo(0, size.height * 0.3332667);
+    path_0.cubicTo(
+        size.width * 0.3000000,
+        size.height,
+        size.width * 0.6996200,
+        size.height * -0.3332667,
+        size.width * 1.162980,
+        size.height * 0.08666667);
+    path_0.lineTo(size.width, size.height);
+    path_0.lineTo(0, size.height);
+    path_0.close();
+
+    Paint paint0Stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    paint0Stroke.color = Colors.transparent.withOpacity(0);
+    canvas.drawPath(path_0, paint0Stroke);
+
+    Paint paint0Fill = Paint()..style = PaintingStyle.fill;
+    paint0Fill.color = appMatColor.withOpacity(0.8);
+    canvas.drawPath(path_0, paint0Fill);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

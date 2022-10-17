@@ -1,13 +1,11 @@
 import 'package:advance_image_picker/advance_image_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:ugbussinesscard/main.dart';
 import 'package:ugbussinesscard/models/carddetail.dart';
 import 'package:ugbussinesscard/models/user.dart';
-import 'package:ugbussinesscard/utils/constants.dart';
 import 'package:ugbussinesscard/utils/dark_theme_provider.dart';
 import 'package:ugbussinesscard/utils/textformfield.dart';
 
@@ -32,22 +30,22 @@ Widget formCustomTextField(
   return CustomTextField(
     keyboardType: textFieldType,
     textStyle: TextStyle(
-        color: HexColor(appGreyColor),
+        color: getFontColor(),
         fontSize: const Size.fromHeight(15).height),
     obscureText: isPassword,
     minLines: minLines,
     decoration: InputDecoration(
       prefixIcon: Icon(icon,
-          color: HexColor(appGreyColor),
+          color: getFontColor(),
           size: const Size.fromHeight(23).height),
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       labelText: labelText,
       labelStyle: TextStyle(
-          color: HexColor(appGreyColor),
+          color: getFontColor(),
           fontSize: const Size.fromHeight(16).height),
       hintText: hintText,
       hintStyle: TextStyle(
-          color: HexColor(appGreyColor),
+          color: getFontColor(),
           fontSize: const Size.fromHeight(15).height),
       contentPadding: EdgeInsets.symmetric(
           horizontal: const Size.fromWidth(20).width,
