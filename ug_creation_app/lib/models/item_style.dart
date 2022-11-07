@@ -42,7 +42,7 @@ class ItemStyle {
         'height': textStyle?.height
       };
 
-  ItemStyle.fromJson(Map<String, dynamic>? json) {
+  ItemStyle.fromJson(Map<dynamic, dynamic>? json) {
     if (json != null) {
       top = json['top']?.toDouble();
       left = json['left']?.toDouble();
@@ -51,7 +51,7 @@ class ItemStyle {
       textStyle = TextStyle(
           fontFamily: json["fontFamily"] ?? "Open Sans",
           fontSize: json["fontSize"]?.toDouble() ?? 18,
-          letterSpacing: json["letterSpacing"] ?? 1,
+          letterSpacing: json["letterSpacing"]?.toDouble() ?? 1,
           height: json["height"]?.toDouble() ?? 1.2,
           fontWeight: FontWeight.values[json["fontWeight"] ?? 3],
           fontStyle: FontStyle.values[json["fontStyle"] ?? 0],

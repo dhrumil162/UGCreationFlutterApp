@@ -2,17 +2,15 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:external_path/external_path.dart';
 
 class FileStorage {
-  Future<String> getDownloadDirectory() async {
+  Future<Directory?> getDownloadDirectory() async {
     if (Platform.isAndroid) {
-      return await ExternalPath.getExternalStoragePublicDirectory(
-          ExternalPath.DIRECTORY_DOWNLOADS);
+      return await getExternalStorageDirectory();
     }
-    var directory = await getApplicationDocumentsDirectory();
-    return directory.path;
+    return await getApplicationDocumentsDirectory();
   }
+
 
   Future<bool> requestPermissions(Permission permission) async {
     if (await permission.isGranted) {

@@ -1,21 +1,28 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:ugbussinesscard/cardelements/cardaddress.dart';
+import 'package:ugbussinesscard/cardelements/cardemail.dart';
+import 'package:ugbussinesscard/cardelements/cardmobile.dart';
+import 'package:ugbussinesscard/cardelements/cardtitle.dart';
+import 'package:ugbussinesscard/cardelements/companylogo.dart';
+import 'package:ugbussinesscard/cardshapes/card2shape.dart';
+import 'package:ugbussinesscard/cardshapes/card3shape.dart';
+import 'package:ugbussinesscard/cardshapes/card4shape.dart';
+import 'package:ugbussinesscard/cardshapes/card5shape.dart';
 import 'package:ugbussinesscard/main.dart';
-import 'package:ugbussinesscard/models/businesscards.dart';
+import 'package:ugbussinesscard/models/carddetail.dart';
 import 'package:ugbussinesscard/models/user.dart';
-import 'package:ugbussinesscard/ui/card2.dart';
+import 'package:ugbussinesscard/ui/defaultcard.dart';
 import 'package:ugbussinesscard/utils/constants.dart';
 import 'package:ugbussinesscard/utils/filestorage.dart';
 import 'package:ugbussinesscard/utils/helper.dart';
 import 'package:advance_image_picker/advance_image_picker.dart';
-import 'package:uuid/uuid.dart';
 
 class HomePage extends StatelessWidget {
   final String? title;
@@ -41,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController addressController = TextEditingController();
   User? user;
   bool isLoader = true;
-  List<BusinessCards> folders = List<BusinessCards>.empty(growable: true);
+  List<dynamic> folders = List<dynamic>.empty(growable: true);
 
   @override
   void initState() {
@@ -50,38 +57,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   initDirectory() async {
-    // removeKey("Card2");
-    // removeKey("companydetail");
     imageCache.clear();
     imageCache.clearLiveImages();
     setState(() {
-      folders = [];
+      folders = getCardKeys();
     });
-    FileStorage fs = FileStorage();
-    if (await fs.requestPermissions(Permission.storage)) {
-      var directory = await fs.getDownloadDirectory();
-      var cardDirectory = Directory("$directory/Cards");
-      if (!cardDirectory.existsSync()) {
-        cardDirectory.createSync(recursive: true);
-      }
-      cardDirectory.listSync().forEach((filesytem) {
-        setState(() {
-          BusinessCards card =
-              BusinessCards(basename(filesytem.path), filesytem.path);
-          var files = Directory(filesytem.path).listSync();
-          if (files.isNotEmpty) {
-            for (var element in files) {
-              card.cards
-                  .add(BusinessCards(basename(element.path), element.path));
-            }
-          }
-          folders.add(card);
-        });
-      });
-    }
+    // FileStorage fs = FileStorage();
+    // if (await fs.requestPermissions(Permission.storage)) {
+    //   var directory = await fs.getDownloadDirectory();
+    //   var cardDirectory = Directory("${directory?.path}/$appFolderName/Cards");
+    //   if (!cardDirectory.existsSync()) {
+    //     cardDirectory.createSync(recursive: true);
+    //   }
+    //   cardDirectory.listSync().forEach((filesytem) {
+    //     setState(() {
+    //       BusinessCards card =
+    //           BusinessCards(basename(filesytem.path), filesytem.path);
+    //       var files = Directory(filesytem.path).listSync();
+    //       if (files.isNotEmpty) {
+    //         for (var element in files) {
+    //           card.cards
+    //               .add(BusinessCards(basename(element.path), element.path));
+    //         }
+    //       }
+    //       folders.add(card);
+    //     });
+    //   });
+    // }
   }
 
-  cardDetail(BuildContext context) {
+  cardDetail(BuildContext context, {bool isProfile = false}) {
     setState(() {
       user = getUserDetail();
       isLoader = true;
@@ -100,171 +105,214 @@ class _HomeScreenState extends State<HomeScreen> {
       isDismissible: false,
       enableDrag: false,
       context: context,
-      builder: (context) => Scaffold(
-          appBar: AppBar(
-            toolbarHeight: const Size.fromHeight(65).height,
-            backgroundColor: themeChangeProvider.darkTheme
-                ? Colors.transparent
-                : appMatColor,
-            automaticallyImplyLeading: false,
-            actions: [
-              InkWell(
-                child: const Icon(Icons.close),
-                onTap: () {
-                  finish(context);
-                },
-              ).paddingRight(const Size.fromWidth(15).width)
-            ],
-            title: Text("Card Details",
-                    style:
-                        TextStyle(fontSize: const Size.fromHeight(22).height))
-                .paddingLeft(const Size.fromWidth(10).width),
-          ),
-          resizeToAvoidBottomInset: true,
-          body: SingleChildScrollView(
-              controller: ModalScrollController.of(context),
-              child: Container(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    formCustomTextField(nameController, TextInputType.name,
-                        icon: Icons.person_outline_rounded,
-                        hintText: "Enter your Name",
-                        labelText: "Name"),
-                    20.height,
-                    formCustomTextField(
-                        emailController, TextInputType.emailAddress,
-                        icon: Icons.email_outlined,
-                        hintText: "Enter your Email ID",
-                        labelText: "Email ID"),
-                    20.height,
-                    formCustomTextField(
-                        mobileNumberController, TextInputType.phone,
-                        icon: Icons.phonelink_lock_outlined,
-                        hintText: "Enter your Mobile",
-                        labelText: "Mobile"),
-                    20.height,
-                    formCustomTextField(
-                        addressController, TextInputType.multiline,
-                        icon: Icons.maps_home_work_outlined,
-                        hintText: "Enter your Address",
-                        minLines: 3,
-                        labelText: "Address"),
-                    15.height,
-                    IconButton(
-                        onPressed: () async {
-                          final List<ImageObject>? objects =
-                              await Navigator.of(context).push(PageRouteBuilder(
-                                  pageBuilder: (context, animation, __) {
-                            return ImagePicker(configs: configs, maxCount: 1);
-                          }));
-                          if ((objects?.length ?? 0) > 0) {
-                            setState(() {
-                              imgObjs = objects!;
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.image_outlined)),
-                    15.height,
-                    imgObjs.isNotEmpty
-                        ? SizedBox(
-                            width: context.width(),
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                    padding: const EdgeInsets.all(2),
-                                    child: Image.file(
-                                        File(imgObjs[0].modifiedPath),
-                                        height: 200,
-                                        fit: BoxFit.cover))
-                              ],
-                            ),
-                          )
-                        : (user?.companyLogo.isEmptyOrNull ?? false
-                            ? 0.height
-                            : Padding(
-                                padding: const EdgeInsets.all(2),
-                                child: Image.file(File(user?.companyLogo ?? ""),
-                                    height: 200, fit: BoxFit.cover))),
-                    20.height,
-                    isLoader
-                        ? AppButton(
-                            elevation: 5,
-                            shapeBorder: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0)),
-                            width: context.width(),
-                            onTap: () async {
-                              setState(() {
-                                isLoader = false;
-                              });
-                              setState(() {
-                                user?.email = emailController.text;
-                                user?.name = nameController.text;
-                                user?.phone = mobileNumberController.text;
-                                user?.address = addressController.text;
-                              });
-
-                              if (imgObjs.isNotEmpty) {
-                                FileStorage fs = FileStorage();
-                                if (await fs
-                                    .requestPermissions(Permission.storage)) {
-                                  var directoryPath =
-                                      await fs.getDownloadDirectory();
-                                  var directory = Directory(directoryPath);
-                                  if (!(directory.existsSync())) {
-                                    directory.createSync();
-                                  }
-                                  var newPath =
-                                      '${directory.path}/companylogo/${const Uuid().v1().toString().substring(0, 7)}.png';
-                                  var capImage = File(imgObjs[0].modifiedPath);
-                                  capImage.readAsBytes().then(
-                                    (bytes) {
-                                      File(newPath)
-                                          .create(recursive: true)
-                                          .then((newFile) {
-                                        newFile
-                                            .writeAsBytes(bytes)
-                                            .then((value) {
-                                          capImage.deleteSync();
-                                          user?.companyLogo = newPath;
-                                          setValue(
-                                              "companydetail", user?.toJson());
-                                          Loader().visible(false);
-                                          finish(context);
-                                          const Card2()
-                                              .launch(context)
-                                              .then((value) {
-                                            initDirectory();
-                                          });
-                                        });
-                                      });
-                                    },
-                                  );
-                                }
-                              } else {
-                                setValue("companydetail", user?.toJson());
-                                finish(context);
-                                const Card2()
-                                    .launch(context)
-                                    .then((value) {
-                                  initDirectory();
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return Scaffold(
+              appBar: AppBar(
+                toolbarHeight: const Size.fromHeight(65).height,
+                backgroundColor: themeChangeProvider.darkTheme
+                    ? Colors.transparent
+                    : appMatColor,
+                automaticallyImplyLeading: false,
+                actions: [
+                  InkWell(
+                    child: const Icon(Icons.close),
+                    onTap: () {
+                      finish(context);
+                    },
+                  ).paddingRight(const Size.fromWidth(15).width)
+                ],
+                title: Text("Card Details",
+                        style: TextStyle(
+                            fontSize: const Size.fromHeight(22).height))
+                    .paddingLeft(const Size.fromWidth(10).width),
+              ),
+              resizeToAvoidBottomInset: true,
+              body: SingleChildScrollView(
+                  controller: ModalScrollController.of(context),
+                  child: Container(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        formCustomTextField(nameController, TextInputType.name,
+                            icon: Icons.person_outline_rounded,
+                            hintText: "Enter your Name",
+                            labelText: "Name"),
+                        20.height,
+                        formCustomTextField(
+                            emailController, TextInputType.emailAddress,
+                            icon: Icons.email_outlined,
+                            hintText: "Enter your Email ID",
+                            labelText: "Email ID"),
+                        20.height,
+                        formCustomTextField(
+                            mobileNumberController, TextInputType.phone,
+                            icon: Icons.phonelink_lock_outlined,
+                            hintText: "Enter your Mobile",
+                            labelText: "Mobile"),
+                        20.height,
+                        formCustomTextField(
+                            addressController, TextInputType.multiline,
+                            icon: Icons.maps_home_work_outlined,
+                            hintText: "Enter your Address",
+                            minLines: 3,
+                            labelText: "Address"),
+                        15.height,
+                        IconButton(
+                            onPressed: () async {
+                              final List<ImageObject>? objects =
+                                  await Navigator.of(context).push(
+                                      PageRouteBuilder(pageBuilder:
+                                          (context, animation, __) {
+                                return ImagePicker(
+                                    configs: configs, maxCount: 1);
+                              }));
+                              if ((objects?.length ?? 0) > 0) {
+                                setState(() {
+                                  imgObjs = objects!;
+                                  user?.companyLogo = "";
                                 });
                               }
                             },
-                            text: "Generate Card",
-                            textStyle: TextStyle(
-                                fontSize: const Size.fromHeight(20).height,
-                                color: white),
-                            color: appMatColor,
-                          )
-                        : const CircularProgressIndicator()
-                  ],
-                ).paddingOnly(
-                    right: const Size.fromWidth(25).width,
-                    left: const Size.fromWidth(25).width,
-                    top: const Size.fromHeight(20).height,
-                    bottom: const Size.fromHeight(25).height),
-              ))),
+                            icon: const Icon(Icons.image_outlined)),
+                        15.height,
+                        imgObjs.isNotEmpty
+                            ? SizedBox(
+                                width: context.width(),
+                                child: Column(
+                                  children: <Widget>[
+                                    Padding(
+                                        padding: const EdgeInsets.all(2),
+                                        child: Image.file(
+                                            File(imgObjs[0].modifiedPath),
+                                            height: 200,
+                                            fit: BoxFit.cover))
+                                  ],
+                                ),
+                              )
+                            : (user?.companyLogo.isEmptyOrNull ?? false
+                                ? 0.height
+                                : Padding(
+                                    padding: const EdgeInsets.all(2),
+                                    child: Image.file(
+                                        File(user?.companyLogo ?? ""),
+                                        height: 200,
+                                        fit: BoxFit.cover))),
+                        20.height,
+                        isLoader
+                            ? AppButton(
+                                elevation: 5,
+                                shapeBorder: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30.0)),
+                                width: context.width(),
+                                onTap: () async {
+                                  setState(() {
+                                    isLoader = false;
+                                  });
+                                  setState(() {
+                                    user?.email =
+                                        emailController.text.isEmptyOrNull
+                                            ? "abc@xyz.com"
+                                            : emailController.text;
+                                    user?.name =
+                                        nameController.text.isEmptyOrNull
+                                            ? "Your name"
+                                            : nameController.text;
+                                    user?.phone = mobileNumberController
+                                            .text.isEmptyOrNull
+                                        ? "9999999999"
+                                        : mobileNumberController.text;
+                                    user?.address =
+                                        addressController.text.isEmptyOrNull
+                                            ? "Your address"
+                                            : addressController.text;
+                                  });
+
+                                  FileStorage fs = FileStorage();
+                                  if (imgObjs.isNotEmpty) {
+                                    if (await fs.requestPermissions(
+                                        Permission.storage)) {
+                                      var directory =
+                                          await fs.getDownloadDirectory();
+                                      if (!(directory?.existsSync() == true)) {
+                                        directory?.createSync();
+                                      }
+                                      var newPath =
+                                          '${directory?.path}/$appFolderName/companylogo/company_logo_default.png';
+                                      var capImage =
+                                          File(imgObjs[0].modifiedPath);
+                                      capImage.readAsBytes().then(
+                                        (bytes) {
+                                          File(newPath)
+                                              .create(recursive: true)
+                                              .then((newFile) {
+                                            newFile
+                                                .writeAsBytes(bytes)
+                                                .then((value) {
+                                              capImage.deleteSync();
+                                              user?.companyLogo = newPath;
+                                              setValue("companydetail",
+                                                  user?.toJson());
+                                              Loader().visible(false);
+                                              setState(() {
+                                                imgObjs = [];
+                                              });
+                                              if (!isProfile) {
+                                                finish(context);
+                                                const DefaultCard(
+                                                  cardName: "New",
+                                                ).launch(context).then((value) {
+                                                  initDirectory();
+                                                });
+                                              }
+                                            });
+                                          });
+                                        },
+                                      );
+                                    }
+                                  } else {
+                                    var directory =
+                                        await fs.getDownloadDirectory();
+                                    if (!(directory?.existsSync() == true)) {
+                                      directory?.createSync();
+                                    }
+                                    setState(() {
+                                      user?.companyLogo =
+                                          "${directory?.path}/$appFolderName/companylogo/company_logo_default.png";
+                                    });
+                                    setValue("companydetail", user?.toJson());
+                                    finish(context);
+                                    if (!isProfile) {
+                                      const DefaultCard(
+                                        cardName: "New",
+                                      ).launch(context).then((value) {
+                                        initDirectory();
+                                      });
+                                    } else {
+                                      snackBar(context,
+                                          title: 'Company detail saved');
+                                    }
+                                  }
+                                },
+                                text: isProfile
+                                    ? "Save Company Detail"
+                                    : "Generate Card",
+                                textStyle: TextStyle(
+                                    fontSize: const Size.fromHeight(20).height,
+                                    color: white),
+                                color: appMatColor,
+                              )
+                            : const CircularProgressIndicator()
+                      ],
+                    ).paddingOnly(
+                        right: const Size.fromWidth(25).width,
+                        left: const Size.fromWidth(25).width,
+                        top: const Size.fromHeight(20).height,
+                        bottom: const Size.fromHeight(25).height),
+                  )));
+        });
+      },
     );
   }
 
@@ -272,7 +320,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: true,
-        appBar: buildAppBar(context, "UG Business Card"),
+        appBar: buildAppBar(context, "UG Business Card", actions: [
+          IconButton(
+              onPressed: () {
+                cardDetail(context, isProfile: true);
+              },
+              icon: Icon(
+                Icons.manage_accounts_rounded,
+                size: const Size.fromHeight(29).height,
+              ))
+        ]),
         body: SingleChildScrollView(
           child: Container(
               padding: EdgeInsets.only(top: const Size.fromHeight(25).height),
@@ -292,62 +349,215 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: appMatColor,
                   ).paddingSymmetric(
                       horizontal: const Size.fromWidth(25).width),
+                  10.height,
                   RefreshIndicator(
                       onRefresh: () async {
                         initDirectory();
                       },
-                      child: folders.isNotEmpty
-                          ? Column(
-                              children: folders.map((folder) {
-                                return Container(
-                                    padding: EdgeInsets.only(
-                                      bottom: const Size.fromHeight(2).height,
+                      child: Column(
+                        children: folders.map((folder) {
+                          CardDetail? cardDetail = getCardDetail(folder);
+                          GlobalKey frontCardKey = GlobalKey();
+                          GlobalKey backCardKey = GlobalKey();
+
+                          return InkWell(
+                              onTap: () {
+                                finish(context);
+                                DefaultCard(
+                                  cardName: folder,
+                                ).launch(context).then((value) {
+                                  initDirectory();
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: themeChangeProvider.darkTheme
+                                      ? cardDarkColor
+                                      : cardLightColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      offset: const Offset(0, 2),
                                     ),
-                                    width: context.width(),
-                                    child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            user = getUserDetail();
-                                          });
-                                          finish(context);
-                                          const Card2()
-                                              .launch(context)
-                                              .then((value) {
-                                            initDirectory();
-                                          });
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: themeChangeProvider.darkTheme
-                                                ? cardDarkColor
-                                                : cardLightColor,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey
-                                                    .withOpacity(0.5),
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: folder.cards.isNotEmpty
-                                              ? Wrap(
-                                                  direction: Axis.horizontal,
-                                                  alignment: WrapAlignment.end,
-                                                  spacing: 0,
-                                                  children:
-                                                      folder.cards.map((e) {
-                                                    return Image.file(
-                                                      File(e.filePath),
-                                                      width:
-                                                          context.width() / 2,
-                                                      fit: BoxFit.contain,
+                                  ],
+                                ),
+                                child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        flex: 5,
+                                        child: Card(
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.zero),
+                                            margin:
+                                                const EdgeInsets.only(right: 2),
+                                            color: Color(cardDetail
+                                                    ?.frontcardcolor ??
+                                                (themeChangeProvider.darkTheme
+                                                    ? cardDarkColor.value
+                                                    : cardLightColor.value)),
+                                            elevation: 10,
+                                            child: SizedBox(
+                                              key: frontCardKey,
+                                              height: getDCardHeight() / 2,
+                                              width: getCardWidth(context) / 2,
+                                              child: LayoutBuilder(builder:
+                                                  (BuildContext context,
+                                                      BoxConstraints
+                                                          constraints) {
+                                                return Stack(children: [
+                                                  folder == "Card2"
+                                                      ? card2Shape(
+                                                          150,
+                                                          constraints
+                                                              .constrainHeight(),
+                                                          cardDetail
+                                                              ?.deviceHeight,
+                                                          context.width() * .5)
+                                                      : folder == "Card3"
+                                                          ? card3Shape(
+                                                              constraints
+                                                                  .constrainHeight(),
+                                                              constraints
+                                                                  .constrainWidth(),
+                                                              cardDetail
+                                                                  ?.deviceWidth,
+                                                              context.width())
+                                                          : folder == "Card5"
+                                                              ? card5FrontShapes(
+                                                                  constraints,
+                                                                  cardDetail,
+                                                                )
+                                                              : 0.height,
+                                                  cardDetail?.user?.companyLogo
+                                                              .isEmptyOrNull ==
+                                                          true
+                                                      ? 0.height
+                                                      : CompanyLogo(
+                                                          true,
+                                                          cardDetail,
+                                                          false,
+                                                          isHome: true,
+                                                          constraints:
+                                                              constraints,
+                                                        ),
+                                                  CardTitle(
+                                                    true,
+                                                    cardDetail,
+                                                    false,
+                                                    constraints: constraints,
+                                                  )
+                                                ]);
+                                              }),
+                                            )),
+                                      ),
+                                      Expanded(
+                                          flex: 5,
+                                          child: Card(
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.zero),
+                                              margin: const EdgeInsets.only(
+                                                  left: 2),
+                                              elevation: 10,
+                                              color: Color(cardDetail
+                                                      ?.backcardcolor ??
+                                                  (themeChangeProvider.darkTheme
+                                                      ? cardDarkColor.value
+                                                      : cardLightColor.value)),
+                                              child: SizedBox(
+                                                  key: backCardKey,
+                                                  height: getDCardHeight() / 2,
+                                                  width:
+                                                      getCardWidth(context) / 2,
+                                                  child: LayoutBuilder(builder:
+                                                      (BuildContext context,
+                                                          BoxConstraints
+                                                              constraints) {
+                                                    return Stack(
+                                                      children: [
+                                                        folder == "Card4"
+                                                            ? card4Shape(
+                                                                constraints
+                                                                    .constrainHeight(),
+                                                                constraints
+                                                                    .constrainWidth(),
+                                                                cardDetail
+                                                                    ?.deviceWidth,
+                                                                context.width())
+                                                            : folder == "Card2"
+                                                                ? card2Shape(
+                                                                    180,
+                                                                    constraints
+                                                                        .constrainHeight(),
+                                                                    cardDetail
+                                                                        ?.deviceHeight,
+                                                                    constraints
+                                                                        .constrainWidth())
+                                                                : folder ==
+                                                                        "Card3"
+                                                                    ? card3Shape(
+                                                                        constraints
+                                                                            .constrainHeight(),
+                                                                        constraints
+                                                                            .constrainWidth(),
+                                                                        cardDetail
+                                                                            ?.deviceWidth,
+                                                                        context
+                                                                            .width())
+                                                                    : folder ==
+                                                                            "Card5"
+                                                                        ? card5BackShapes(
+                                                                            constraints,
+                                                                            cardDetail)
+                                                                        : 0.height,
+                                                        cardDetail?.user?.companyLogo
+                                                                        .isEmptyOrNull ==
+                                                                    true ||
+                                                                folder ==
+                                                                    "Card5"
+                                                            ? 0.height
+                                                            : CompanyLogo(
+                                                                false,
+                                                                cardDetail,
+                                                                false,
+                                                                isHome: true,
+                                                                constraints:
+                                                                    constraints,
+                                                              ),
+                                                        folder == "Card5"
+                                                            ? 0.height
+                                                            : CardTitle(
+                                                                false,
+                                                                cardDetail,
+                                                                false,
+                                                                constraints:
+                                                                    constraints),
+                                                        CardAddress(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints),
+                                                        CardMobile(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints),
+                                                        CardEmail(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints)
+                                                      ],
                                                     );
-                                                  }).toList())
-                                              : 0.height,
-                                        )));
-                              }).toList(),
-                            ).paddingTop(const Size.fromHeight(10).height)
-                          : 0.height)
+                                                  }))))
+                                    ]),
+                              )).paddingBottom(const Size.fromHeight(5).height);
+                        }).toList(),
+                      )
+                          .paddingTop(const Size.fromHeight(10).height)
+                          .paddingBottom(const Size.fromHeight(10).height))
                 ],
               )),
         ));

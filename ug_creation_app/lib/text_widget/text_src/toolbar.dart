@@ -67,15 +67,6 @@ class _ToolbarState extends State<Toolbar> {
             widget.onToolSelect(EditorToolbarAction.fontColorTool);
           },
         ),
-        // OptionButton(
-        //   isActive: _selectedAction == EditorToolbarAction.backgroundColorTool,
-        //   child: const Icon(Icons.format_color_fill),
-        //   onPressed: () {
-        //     setState(() =>
-        //         _selectedAction = EditorToolbarAction.backgroundColorTool);
-        //     widget.onToolSelect(EditorToolbarAction.backgroundColorTool);
-        //   },
-        // ),
       ],
     );
   }

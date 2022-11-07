@@ -16,6 +16,8 @@ Map<int, Color> color = const {
 };
 MaterialColor appMatColor = MaterialColor(0xFFc4792d, color);
 
+String appFolderName = "UG Creations";
+
 final List<String> fonts = [
   'Acme',
   'Bungee',

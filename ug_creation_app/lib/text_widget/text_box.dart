@@ -1,5 +1,4 @@
 // ignore_for_file: library_private_types_in_public_api
-
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:ugbussinesscard/models/item_style.dart';
@@ -9,28 +8,21 @@ import 'textstyle_editor.dart';
 
 // ignore: must_be_immutable
 class TextEditingBox extends StatefulWidget {
-  // TextModel for your text
+
   final TextModel newText;
 
-  /// Your widget should be move within this [boundWidth]
   final double boundWidth;
 
-  /// Your widget should be move within this [boundHeight]
   final double boundHeight;
 
-  /// For Visibility of editing border
   bool isSelected;
 
-  /// For Visibility of editing style modal
   bool openModal;
 
-  /// Total Fonts option that you want to give to user
   final List<String> fonts;
 
-  /// If you use onTap then you Have to manage IsSelected field in TextModel and [isSelected]
   final Function()? onTap;
 
-  /// If you use onCancel then you Have to manage IsSelected field in TextModel and [isSelected]
   final Function()? onCancel;
 
   final void Function(ItemStyle)? onMoveStop;
@@ -45,11 +37,6 @@ class TextEditingBox extends StatefulWidget {
 
   double? angle = 0.0;
 
-  /// Create a [TextEditingBox] widget
-  ///
-  /// [TextModel] detail of your picture
-  /// [onTap] callback function that called when you tap on [TextEditingBox]
-  /// [onCancel] callback function that called when you tap on Cross icon in [TextEditingBox] border
   TextEditingBox(
       {Key? key,
       required this.newText,
@@ -101,6 +88,7 @@ class _TextEditingBoxState extends State<TextEditingBox> {
         child: Transform.rotate(
           angle: angle,
           child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onScaleUpdate: (tap) {
               if (tap.pointerCount == 2) {
                 widget.newText.scale = tap.scale;
@@ -222,8 +210,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onPanStart: (details) {
-                      // final touchPositionFromCenter =
-                      //     details.localPosition - centerOfGestureDetector;
                       _angleDelta = _oldAngle - details.localPosition.direction;
                     },
                     onPanEnd: (details) {
@@ -243,12 +229,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
                         },
                       );
                     },
-                    // onScaleUpdate: (detail) {
-                    //   setState(() => angle = detail.focalPoint.direction);
-                    //   if (widget.onRotate != null && widget.isSelected) {
-                    //     widget.onRotate!(angle);
-                    //   }
-                    // },
                     child: widget.isSelected
                         ? Container(
                             padding: const EdgeInsets.all(2),
@@ -303,7 +283,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
     );
   }
 
-  // Model Bottom sheet
   Future textModelBottomSheet(
       {required BuildContext context, required TextModel newText}) {
     double height = MediaQuery.of(context).size.height;
@@ -330,7 +309,6 @@ class _TextEditingBoxState extends State<TextEditingBox> {
         });
   }
 
-  // Text edit dailog box
   Future showEditBox({BuildContext? context, TextModel? textModel}) {
     return showDialog(
         context: context!,

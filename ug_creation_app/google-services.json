@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "950694011755",
+    "project_id": "visiting-card-63b6d",
+    "storage_bucket": "visiting-card-63b6d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950694011755:android:44677f1f5969655179a22e",
+        "android_client_info": {
+          "package_name": "com.app.ugbussinesscard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "950694011755-opviaeaigo4rocoeft6btieu2mamfqfn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.app.ugbussinesscard",
+            "certificate_hash": "cb451a5f48f9e4a8c25f434f94f951ce2134eb12"
+          }
+        },
+        {
+          "client_id": "950694011755-tgvtln14562q7110p80ntguisobacf7d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeR3ANc9tlKknBp3Kq_bxglFuEkTmtAzk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "950694011755-tgvtln14562q7110p80ntguisobacf7d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

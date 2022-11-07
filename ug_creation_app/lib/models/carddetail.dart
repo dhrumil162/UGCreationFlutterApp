@@ -8,6 +8,8 @@ class CardDetail {
   int? frontcardcolor;
   Size? frontImageSize;
   Size? backImageSize;
+  double? deviceHeight;
+  double? deviceWidth;
   ItemStyle? frontImagePosition;
   ItemStyle? frontTitleStyle;
   ItemStyle? backImagePosition;
@@ -20,10 +22,12 @@ class CardDetail {
   CardDetail(this.backcardcolor, this.frontcardcolor);
 
   //constructor that convert json to object instance
-  CardDetail.fromJson(Map<String, dynamic> json) {
-    if (json.isNotEmpty) {
+  CardDetail.fromJson(Map<dynamic, dynamic>? json) {
+    if (json != null && json.isNotEmpty) {
       frontcardcolor = json['frontcardcolor'];
       backcardcolor = json['backcardcolor'];
+      deviceHeight = json['deviceHeight']?.toDouble();
+      deviceWidth = json['deviceWidth']?.toDouble();
       if (json['frontImageSize'] != null) {
         frontImageSize = Size(json['frontImageSize']['width'].toDouble(),
             json['frontImageSize']['height'].toDouble());
@@ -47,6 +51,8 @@ class CardDetail {
   Map<String, dynamic> toJson() => {
         'frontcardcolor': frontcardcolor,
         'backcardcolor': backcardcolor,
+        'deviceHeight': deviceHeight,
+        'deviceWidth': deviceWidth,
         'frontImageSize': {
           "height": frontImageSize?.height,
           "width": frontImageSize?.width

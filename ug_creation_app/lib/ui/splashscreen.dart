@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:ugbussinesscard/ui/home.dart';
+import 'package:ugbussinesscard/utils/helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -21,8 +22,9 @@ class SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> init() async {
-    await Future.delayed(const Duration(seconds: 4));
-    const HomePage().launch(context, isNewTask: true);
+    syncCards(() {
+      const HomePage().launch(context, isNewTask: true);
+    });
   }
 
   @override
