@@ -1,14 +1,14 @@
 // ignore_for_file: library_private_types_in_public_api
+import 'dart:math';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:ugbussinesscard/models/item_style.dart';
 import 'package:ugbussinesscard/models/text_model.dart';
-
 import 'textstyle_editor.dart';
 
 // ignore: must_be_immutable
 class TextEditingBox extends StatefulWidget {
-
   final TextModel newText;
 
   final double boundWidth;
@@ -64,8 +64,10 @@ class _TextEditingBoxState extends State<TextEditingBox> {
   double xPosition = 0.0;
   double yPosition = 0.0;
   double _oldAngle = 0.0;
-  double _angleDelta = 0.0;
+  double? height = 0;
+  double? width = 0;
   Offset deltaOffset = const Offset(0, 0);
+  final _textWidgetKey = GlobalKey();
 
   @override
   void initState() {
@@ -76,211 +78,224 @@ class _TextEditingBoxState extends State<TextEditingBox> {
       _oldAngle = widget.angle ?? 0.0;
     });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        height = _textWidgetKey.currentContext!.size?.height;
+        width = _textWidgetKey.currentContext!.size?.width;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: widget.newText.top,
-      left: widget.newText.left,
-      child: Transform.scale(
-        scale: widget.newText.scale,
-        child: Transform.rotate(
-          angle: angle,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onScaleUpdate: (tap) {
-              if (tap.pointerCount == 2) {
-                widget.newText.scale = tap.scale;
-                angle = tap.rotation;
-              }
-              if (widget.onMoveStop != null && widget.isSelected) {
-                if (_oldAngle > 1.2) {
-                  setState(() {
-                    xPosition -= tap.focalPointDelta.dx;
-                    yPosition -= tap.focalPointDelta.dy;
-                  });
-                } else {
-                  setState(() {
-                    xPosition += tap.focalPointDelta.dx;
-                    yPosition += tap.focalPointDelta.dy;
-                  });
-                }
-                widget.onMoveStop!(ItemStyle(xPosition, yPosition));
-              }
-            },
-            onTap: () {
-              if (widget.onTap == null) {
-                setState(() {
-                  if (widget.isSelected) {
-                    widget.isSelected = false;
-                    widget.newText.isSelected = false;
-                  } else {
-                    widget.isSelected = true;
-                    widget.newText.isSelected = true;
-                  }
-                });
-                if (widget.isSelected == true) {
-                  textModelBottomSheet(
-                    context: context,
-                    newText: widget.newText,
-                  );
-                }
+    return GestureDetector(
+        behavior: HitTestBehavior.deferToChild,
+        onPanUpdate: (tap) {
+          if (widget.onMoveStop != null && widget.isSelected) {
+            setState(() {
+              xPosition = max(0, xPosition + tap.delta.dx);
+              yPosition = max(0, yPosition + tap.delta.dy);
+            });
+            widget.onMoveStop!(ItemStyle(xPosition, yPosition));
+          }
+        },
+        onTap: () {
+          if (widget.onTap == null) {
+            setState(() {
+              if (widget.isSelected) {
+                widget.isSelected = false;
+                widget.newText.isSelected = false;
               } else {
-                widget.onTap!();
-                if (widget.isSelected) {
-                  textModelBottomSheet(
-                    context: context,
-                    newText: widget.newText,
-                  );
-                }
+                widget.isSelected = true;
+                widget.newText.isSelected = true;
               }
-            },
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DottedBorder(
-                    color: widget.isSelected
-                        ? Colors.grey[600]!
-                        : Colors.transparent,
-                    padding: const EdgeInsets.all(4),
-                    child: Text(widget.newText.name,
-                        style: widget.newText.textStyle,
-                        textScaleFactor: widget.newText.scale),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: InkWell(
-                    onTap: () {
-                      if (widget.onCancel != null) {
-                        widget.onCancel!();
-                      }
-                      setState(() {
-                        if (widget.isSelected) {
-                          widget.isSelected = false;
-                          widget.newText.isSelected = false;
-                        } else {
-                          widget.isSelected = true;
-                          widget.newText.isSelected = true;
-                        }
-                      });
-                    },
-                    child: widget.isSelected
-                        ? Container(
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle, color: Colors.white),
-                            child: Icon(Icons.cancel_outlined,
-                                color: Colors.black,
-                                size: const Size.fromHeight(20).height),
-                          )
-                        : Container(),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  child: InkWell(
-                    onTap: () async {
-                      await showEditBox(
-                        context: context,
-                        textModel: widget.newText,
-                      );
-                    },
-                    child: widget.isSelected
-                        ? Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.black, width: 1),
-                                shape: BoxShape.circle,
-                                color: Colors.white),
-                            child: Icon(Icons.edit,
-                                color: Colors.black,
-                                size: const Size.fromHeight(14).height),
-                          )
-                        : Container(),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onPanStart: (details) {
-                      _angleDelta = _oldAngle - details.localPosition.direction;
-                    },
-                    onPanEnd: (details) {
-                      setState(
-                        () {
-                          _oldAngle = angle;
-                        },
-                      );
-                      if (widget.onRotate != null && widget.isSelected) {
-                        widget.onRotate!(_oldAngle);
-                      }
-                    },
-                    onPanUpdate: (details) {
-                      setState(
-                        () {
-                          angle = details.localPosition.direction + _angleDelta;
-                        },
-                      );
-                    },
-                    child: widget.isSelected
-                        ? Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.black, width: 1),
-                                shape: BoxShape.circle,
-                                color: Colors.white),
-                            child: Icon(Icons.rotate_right,
-                                color: Colors.black,
-                                size: const Size.fromHeight(14).height),
-                          )
-                        : Container(),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onPanUpdate: (tap) {
-                      if (tap.delta.dx.isNegative &&
-                          widget.newText.scale > .8) {
-                        setState(() => widget.newText.scale -= 0.01);
-                      } else if (!tap.delta.dx.isNegative &&
-                          widget.newText.scale < 5) {
-                        setState(() => widget.newText.scale += 0.01);
-                      }
-                      if (widget.onSizeChange != null && widget.isSelected) {
-                        widget.onSizeChange!(widget.newText.scale);
-                      }
-                    },
-                    child: widget.isSelected
-                        ? Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.black, width: 1),
-                                color: Colors.white,
-                                shape: BoxShape.circle),
-                            child: Icon(Icons.crop,
-                                color: Colors.black,
-                                size: const Size.fromHeight(14).height),
-                          )
-                        : Container(),
-                  ),
-                ),
-              ],
-            ),
+            });
+            if (widget.isSelected == true) {
+              textModelBottomSheet(
+                context: context,
+                newText: widget.newText,
+              );
+            }
+          } else {
+            widget.onTap!();
+            if (widget.isSelected) {
+              textModelBottomSheet(
+                context: context,
+                newText: widget.newText,
+              );
+            }
+          }
+        },
+        child: Container(
+          margin: EdgeInsets.only(
+            top: yPosition,
+            left: xPosition,
           ),
-        ),
-      ),
-    );
+          child: Transform.scale(
+              scale: widget.newText.scale,
+              child: Container(
+                transformAlignment: FractionalOffset.center,
+                transform: Matrix4.identity()..rotateZ(angle),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DottedBorder(
+                        color: widget.isSelected
+                            ? Colors.grey[600]!
+                            : Colors.transparent,
+                        padding: const EdgeInsets.all(4),
+                        child: Text(widget.newText.name,
+                            key: _textWidgetKey,
+                            style: widget.newText.textStyle,
+                            textScaleFactor: widget.newText.scale),
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: InkWell(
+                        onTap: () {
+                          if (widget.onCancel != null) {
+                            widget.onCancel!();
+                          }
+                          setState(() {
+                            if (widget.isSelected) {
+                              widget.isSelected = false;
+                              widget.newText.isSelected = false;
+                            } else {
+                              widget.isSelected = true;
+                              widget.newText.isSelected = true;
+                            }
+                          });
+                        },
+                        child: widget.isSelected
+                            ? Container(
+                                decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white),
+                                child: Icon(Icons.cancel_outlined,
+                                    color: Colors.black,
+                                    size: const Size.fromHeight(20).height),
+                              )
+                            : Container(),
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: InkWell(
+                        onTap: () async {
+                          await showEditBox(
+                            context: context,
+                            textModel: widget.newText,
+                          );
+                        },
+                        child: widget.isSelected
+                            ? Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.black, width: 1),
+                                    shape: BoxShape.circle,
+                                    color: Colors.white),
+                                child: Icon(Icons.edit,
+                                    color: Colors.black,
+                                    size: const Size.fromHeight(14).height),
+                              )
+                            : Container(),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.deferToChild,
+                        onPanStart: (details) {
+                          Offset centerOfGestureDetector = Offset(
+                              (_textWidgetKey.currentContext!.size?.width)! / 2,
+                              (_textWidgetKey.currentContext!.size?.height)! /
+                                  2);
+                          final touchPositionFromCenter =
+                              details.localPosition - centerOfGestureDetector;
+                          _oldAngle = touchPositionFromCenter.direction - angle;
+                        },
+                        onPanEnd: (details) {
+                          setState(
+                            () {
+                              _oldAngle = angle;
+                            },
+                          );
+                          if (widget.onRotate != null && widget.isSelected) {
+                            widget.onRotate!(_oldAngle);
+                          }
+                        },
+                        onPanUpdate: (details) {
+                          Offset centerOfGestureDetector = Offset(
+                              (_textWidgetKey.currentContext!.size?.width)! / 2,
+                              (_textWidgetKey.currentContext!.size?.height)! /
+                                  2);
+                          final touchPositionFromCenter =
+                              details.localPosition - centerOfGestureDetector;
+                          setState(
+                            () {
+                              angle =
+                                  touchPositionFromCenter.direction - _oldAngle;
+                            },
+                          );
+                        },
+                        child: widget.isSelected
+                            ? Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.black, width: 1),
+                                    shape: BoxShape.circle,
+                                    color: Colors.white),
+                                child: Icon(Icons.rotate_right,
+                                    color: Colors.black,
+                                    size: const Size.fromHeight(14).height),
+                              )
+                            : Container(),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.deferToChild,
+                        onPanUpdate: (tap) {
+                          if (tap.delta.dx.isNegative &&
+                              widget.newText.scale > .8) {
+                            setState(() => widget.newText.scale -= 0.01);
+                          } else if (!tap.delta.dx.isNegative &&
+                              widget.newText.scale < 5) {
+                            setState(() => widget.newText.scale += 0.01);
+                          }
+                          if (widget.onSizeChange != null &&
+                              widget.isSelected) {
+                            widget.onSizeChange!(widget.newText.scale);
+                          }
+                        },
+                        child: widget.isSelected
+                            ? Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.black, width: 1),
+                                    color: Colors.white,
+                                    shape: BoxShape.circle),
+                                child: Icon(Icons.crop,
+                                    color: Colors.black,
+                                    size: const Size.fromHeight(14).height),
+                              )
+                            : Container(),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ));
   }
 
   Future textModelBottomSheet(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_database/firebase_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   await initialize();
   await Firebase.initializeApp();
   FirebaseDatabase.instance.setPersistenceEnabled(true);
@@ -49,7 +51,7 @@ class MyApp extends StatelessWidget {
     }, child: Consumer<DarkThemeProvider>(
         builder: (BuildContext context, value, Widget? child) {
       return MaterialApp(
-        title: 'UG Business Card',
+        title: 'UG Visiting Card',
         debugShowCheckedModeBanner: false,
         theme: Styles.themeData(themeChangeProvider.darkTheme, context),
         home: SplashScreen(key: key),

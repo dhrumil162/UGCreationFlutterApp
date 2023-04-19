@@ -25,37 +25,37 @@ import 'package:ugbussinesscard/utils/filestorage.dart';
 import 'package:ugbussinesscard/utils/helper.dart';
 import 'package:advance_image_picker/advance_image_picker.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage1 extends StatelessWidget {
   final String? title;
-  const HomePage({Key? key, this.title}) : super(key: key);
+  const HomePage1({Key? key, this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const HomeScreen();
+    return const HomeScreen1();
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen1 extends StatefulWidget {
+  const HomeScreen1({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _HomeScreen1State createState() => _HomeScreen1State();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreen1State extends State<HomeScreen1> {
   TextEditingController emailController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController mobileNumberController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   User? user;
   bool isLoader = true;
-  // List<dynamic> folders = List<dynamic>.empty(growable: true);
+  List<dynamic> folders = List<dynamic>.empty(growable: true);
   // BannerAd? _bannerAd;
 
   @override
   void initState() {
     super.initState();
-    // initDirectory();
+    initDirectory();
     // initAd();
   }
 
@@ -83,6 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     ).load();
+  }
+
+  initDirectory() async {
+    imageCache.clear();
+    imageCache.clearLiveImages();
+    setState(() {
+      folders = getCardKeys();
+    });
   }
 
   cardDetail(BuildContext context, {bool isProfile = false}) {
@@ -264,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 const DefaultCard(
                                                   cardName: "New",
                                                 ).launch(context).then((value) {
-                                                  // initDirectory();
+                                                  initDirectory();
                                                 });
                                               }
                                             });
@@ -290,7 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const DefaultCard(
                                         cardName: "New",
                                       ).launch(context).then((value) {
-                                        // initDirectory();
+                                        initDirectory();
                                       });
                                     } else {
                                       snackBar(context,
@@ -365,7 +373,215 @@ class _HomeScreenState extends State<HomeScreen> {
                   //         ),
                   //       )
                   //     : 0.height,
-                   ],
+                  RefreshIndicator(
+                      onRefresh: () async {
+                        initDirectory();
+                      },
+                      child: Column(
+                        children: folders.map((folder) {
+                          CardDetail? cardDetail = getCardDetail(folder);
+                          GlobalKey frontCardKey = GlobalKey();
+                          GlobalKey backCardKey = GlobalKey();
+
+                          return InkWell(
+                              onTap: () {
+                                finish(context);
+                                DefaultCard(
+                                  cardName: folder,
+                                ).launch(context).then((value) {
+                                  initDirectory();
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: themeChangeProvider.darkTheme
+                                      ? cardDarkColor
+                                      : cardLightColor,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        flex: 5,
+                                        child: Card(
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.zero),
+                                            margin:
+                                                const EdgeInsets.only(right: 2),
+                                            color: Color(cardDetail
+                                                    ?.frontcardcolor ??
+                                                (themeChangeProvider.darkTheme
+                                                    ? cardDarkColor.value
+                                                    : cardLightColor.value)),
+                                            elevation: 10,
+                                            child: SizedBox(
+                                              key: frontCardKey,
+                                              height: getDCardHeight() / 2,
+                                              width: getCardWidth(context) / 2,
+                                              child: LayoutBuilder(builder:
+                                                  (BuildContext context,
+                                                      BoxConstraints
+                                                          constraints) {
+                                                return Stack(children: [
+                                                  folder == "Card2"
+                                                      ? card2Shape(
+                                                          150,
+                                                          constraints
+                                                              .constrainHeight(),
+                                                          cardDetail
+                                                              ?.deviceHeight,
+                                                          context.width() * .5)
+                                                      : folder == "Card3"
+                                                          ? card3Shape(
+                                                              constraints
+                                                                  .constrainHeight(),
+                                                              constraints
+                                                                  .constrainWidth(),
+                                                              cardDetail
+                                                                  ?.deviceWidth,
+                                                              context.width())
+                                                          : folder == "Card5"
+                                                              ? card5FrontShapes(
+                                                                  constraints,
+                                                                  cardDetail,
+                                                                )
+                                                              : 0.height,
+                                                  cardDetail?.user?.companyLogo
+                                                              .isEmptyOrNull ==
+                                                          true
+                                                      ? 0.height
+                                                      : CompanyLogo(
+                                                          true,
+                                                          cardDetail,
+                                                          false,
+                                                          isHome: true,
+                                                          constraints:
+                                                              constraints,
+                                                        ),
+                                                  CardTitle(
+                                                    true,
+                                                    cardDetail,
+                                                    false,
+                                                    constraints: constraints,
+                                                  )
+                                                ]);
+                                              }),
+                                            )),
+                                      ),
+                                      Expanded(
+                                          flex: 5,
+                                          child: Card(
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.zero),
+                                              margin: const EdgeInsets.only(
+                                                  left: 2),
+                                              elevation: 10,
+                                              color: Color(cardDetail
+                                                      ?.backcardcolor ??
+                                                  (themeChangeProvider.darkTheme
+                                                      ? cardDarkColor.value
+                                                      : cardLightColor.value)),
+                                              child: SizedBox(
+                                                  key: backCardKey,
+                                                  height: getDCardHeight() / 2,
+                                                  width:
+                                                      getCardWidth(context) / 2,
+                                                  child: LayoutBuilder(builder:
+                                                      (BuildContext context,
+                                                          BoxConstraints
+                                                              constraints) {
+                                                    return Stack(
+                                                      children: [
+                                                        folder == "Card4"
+                                                            ? card4Shape(
+                                                                constraints
+                                                                    .constrainHeight(),
+                                                                constraints
+                                                                    .constrainWidth(),
+                                                                cardDetail
+                                                                    ?.deviceWidth,
+                                                                context.width())
+                                                            : folder == "Card2"
+                                                                ? card2Shape(
+                                                                    180,
+                                                                    constraints
+                                                                        .constrainHeight(),
+                                                                    cardDetail
+                                                                        ?.deviceHeight,
+                                                                    constraints
+                                                                        .constrainWidth())
+                                                                : folder ==
+                                                                        "Card3"
+                                                                    ? card3Shape(
+                                                                        constraints
+                                                                            .constrainHeight(),
+                                                                        constraints
+                                                                            .constrainWidth(),
+                                                                        cardDetail
+                                                                            ?.deviceWidth,
+                                                                        context
+                                                                            .width())
+                                                                    : folder ==
+                                                                            "Card5"
+                                                                        ? card5BackShapes(
+                                                                            constraints,
+                                                                            cardDetail)
+                                                                        : 0.height,
+                                                        cardDetail?.user?.companyLogo
+                                                                        .isEmptyOrNull ==
+                                                                    true ||
+                                                                folder ==
+                                                                    "Card5"
+                                                            ? 0.height
+                                                            : CompanyLogo(
+                                                                false,
+                                                                cardDetail,
+                                                                false,
+                                                                isHome: true,
+                                                                constraints:
+                                                                    constraints,
+                                                              ),
+                                                        folder == "Card5"
+                                                            ? 0.height
+                                                            : CardTitle(
+                                                                false,
+                                                                cardDetail,
+                                                                false,
+                                                                constraints:
+                                                                    constraints),
+                                                        CardAddress(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints),
+                                                        CardMobile(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints),
+                                                        CardEmail(
+                                                            cardDetail, false,
+                                                            constraints:
+                                                                constraints)
+                                                      ],
+                                                    );
+                                                  }))))
+                                    ]),
+                              )).paddingBottom(const Size.fromHeight(5).height);
+                        }).toList(),
+                      )
+                          .paddingTop(const Size.fromHeight(10).height)
+                          .paddingBottom(const Size.fromHeight(10).height)),
+                ],
               )),
         ));
   }

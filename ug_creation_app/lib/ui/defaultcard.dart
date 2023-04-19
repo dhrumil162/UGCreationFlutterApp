@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:ugbussinesscard/cardelements/cardaddress.dart';
 import 'package:ugbussinesscard/cardelements/cardemail.dart';
@@ -17,6 +18,7 @@ import 'package:ugbussinesscard/cardshapes/card5shape.dart';
 import 'package:ugbussinesscard/main.dart';
 import 'package:ugbussinesscard/models/carddetail.dart';
 import 'package:ugbussinesscard/models/item_style.dart';
+import 'package:ugbussinesscard/utils/ad_helper.dart';
 import 'package:ugbussinesscard/utils/constants.dart';
 import 'package:ugbussinesscard/utils/helper.dart';
 import 'package:ugbussinesscard/utils/widget_to_image.dart';
@@ -43,6 +45,19 @@ class _DefaultCardState extends State<DefaultCard> {
   bool isEdit = false;
   String cardName = "";
   BoxConstraints? cardConstraints;
+  // BannerAd? _bannerAd;
+  // InterstitialAd? _interstitialAd;
+
+  @override
+  void dispose() {
+    // if (_interstitialAd != null) {
+    //   _interstitialAd?.dispose();
+    // }
+    // if (_bannerAd != null) {
+    //   _bannerAd?.dispose();
+    // }
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -122,6 +137,37 @@ class _DefaultCardState extends State<DefaultCard> {
             ?.copyWith(color: getFontColor());
       }
     });
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {},
+          );
+
+          // setState(() {
+          //   _interstitialAd = ad;
+          // });
+        },
+        onAdFailedToLoad: (err) {},
+      ),
+    );
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          // setState(() {
+          //   _bannerAd = ad as BannerAd;
+          // });
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+        },
+      ),
+    ).load();
   }
 
   Future<bool> colorPickerDialog() async {
@@ -340,6 +386,9 @@ class _DefaultCardState extends State<DefaultCard> {
               }
               downloadCard(
                   context, cardName, cardDetail, key1, key2, cardConstraints);
+              // if (_interstitialAd != null) {
+              //   _interstitialAd?.show();
+              // }
             } else if (value == 5) {
               saveCardDialog();
             }
@@ -473,6 +522,19 @@ class _DefaultCardState extends State<DefaultCard> {
                                 );
                               })));
                     }),
+                    15.height,
+                    // _bannerAd != null
+                    //     ? Align(
+                    //         alignment: Alignment.topCenter,
+                    //         child: Container(
+                    //           margin: EdgeInsets.only(
+                    //               bottom: const Size.fromHeight(15).height),
+                    //           width: _bannerAd!.size.width.toDouble(),
+                    //           height: _bannerAd!.size.height.toDouble(),
+                    //           child: AdWidget(ad: _bannerAd!),
+                    //         ),
+                    //       )
+                    //     : 0.height,
                   ],
                 ))));
   }

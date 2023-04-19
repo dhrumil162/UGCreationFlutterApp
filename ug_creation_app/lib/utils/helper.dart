@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:advance_image_picker/advance_image_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
@@ -134,8 +135,7 @@ downloadCard(BuildContext context, String cardName, CardDetail? cardDetail,
   FileStorage fs = FileStorage();
   if (await fs.requestPermissions(Permission.storage)) {
     var directory = await fs.getDownloadDirectory();
-    var cardDirectory =
-        Directory("${directory?.path}/$appFolderName/Cards/$cardName");
+    var cardDirectory = Directory("$directory/$appFolderName/Cards/$cardName");
     if (!cardDirectory.existsSync()) {
       cardDirectory.createSync(recursive: true);
     }
@@ -187,14 +187,14 @@ syncCards(Function callBack) async {
         parsed.forEach((key, value) async {
           var cardDetail = CardDetail.fromJson(value);
           cardDetail.user?.companyLogo =
-              "${directory?.path}/$appFolderName/companylogo/company_logo_default.png";
+              "$directory/$appFolderName/companylogo/company_logo_default.png";
           if (box.get(key) == null) {
             box.put(key, cardDetail.toJson());
           }
         });
 
         var defaultImageDirectory =
-            Directory("${directory?.path}/$appFolderName/companylogo");
+            Directory("$directory/$appFolderName/companylogo");
         if (!defaultImageDirectory.existsSync()) {
           defaultImageDirectory.createSync(recursive: true);
         }

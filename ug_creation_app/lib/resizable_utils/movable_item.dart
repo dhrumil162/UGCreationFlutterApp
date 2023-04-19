@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:ugbussinesscard/models/item_style.dart';
 
@@ -42,11 +44,11 @@ class _MoveableItemState extends State<MoveableItem> {
       top: yPosition,
       left: xPosition,
       child: GestureDetector(
-        onPanUpdate: (tapInfo) {
+        onPanUpdate: (tap) {
           if (widget.isMovable ?? false) {
             setState(() {
-              xPosition += tapInfo.delta.dx;
-              yPosition += tapInfo.delta.dy;
+              xPosition = max(0, xPosition + tap.delta.dx);
+              yPosition = max(0, yPosition + tap.delta.dy);
             });
             if (widget.onMoveStop != null) {
               widget.onMoveStop!(ItemStyle(xPosition, yPosition));
